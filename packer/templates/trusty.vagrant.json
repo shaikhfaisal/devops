@@ -1,0 +1,82 @@
+{
+  "description" : "Ubuntu LTS Trusty Tahr",
+
+  "variables" : {
+    "vm_name": "ubuntu-14.04-LTS.vagrant.box"
+  },
+  
+  "builders":  [
+    {
+      "type": "virtualbox-iso",
+      "guest_os_type": "Ubuntu_64",
+  
+      "iso_url": "http://releases.ubuntu.com/trusty/ubuntu-14.04-server-amd64.iso",
+      "iso_checksum": "01545fa976c8367b4f0d59169ac4866c",
+      "iso_checksum_type": "md5",
+  
+      "shutdown_command": "echo 'halt -p' > shutdown.sh; echo 'vagrant'|sudo -S sh 'shutdown.sh'",
+  
+      "disk_size": 20000,
+  
+      "format": "ovf",
+      "output_directory": "vms/{{user `vm_name`}}", 
+ 
+      "headless": false,
+  
+      "http_directory": "httpdir",
+      "http_port_min": 10082,
+      "http_port_max": 10089,
+  
+      "ssh_host_port_min": 2222,
+      "ssh_host_port_max": 2229,
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "90m",
+  
+      "vm_name": "{{user `vm_name`}}",
+
+      "boot_wait": "6s",
+
+      "boot_command":  [
+
+        "<esc>",
+        "<esc>",
+        "<enter><wait>",
+        "/install/vmlinuz",
+        " auto",
+        " console-setup/ask_detect=false",
+        " console-setup/layoutcode=uk",
+        " console-setup/modelcode=pc105",
+        " debconf/frontend=noninteractive",
+        " debian-installer=en_GB",
+        " fb=false",
+        " initrd=/install/initrd.gz",
+        " kbd-chooser/method=us",
+        " keyboard-configuration/layout=UK",
+        " keyboard-configuration/variant=UK",
+        " locale=en_US",
+        " netcfg/get_domain=example.com",
+        " netcfg/get_hostname=vagrant",
+        " noapic",
+        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu-14.04/preseed.cfg",
+        " -- ",
+        "<enter>"
+      ],
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "1500"]
+      ]
+    }
+  ],
+
+  "provisioners": [
+    {
+       "type": "shell",
+       "script": "provisioners/shell/trusty_vagrant_setup_script.sh"
+     }
+  ],
+
+  "post-processors": ["vagrant"]
+
+
+}
