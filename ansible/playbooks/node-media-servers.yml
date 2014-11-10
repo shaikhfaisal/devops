@@ -1,0 +1,6 @@
+---
+- hosts: media
+  sudo: true
+  roles:
+    - base
+    - media

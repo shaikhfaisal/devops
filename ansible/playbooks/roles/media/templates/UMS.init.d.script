@@ -1,0 +1,151 @@
+#!/bin/bash
+#
+### BEGIN INIT INFO
+# Provides:          ums
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts UMS program.
+# Description:       Java Upnp Media Server
+### END INIT INFO
+
+#set -x
+
+# Author: Papa Issa DIAKHATE 
+#
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DESC="Universal Media Server"
+NAME=UMS
+UMS_PROFILE=/etc/UMS.conf
+UMS_USER={{ ums_user }}
+DAEMON=/opt/ums/$NAME.sh
+DAEMON_OPTS="console"
+SCRIPTNAME=/etc/init.d/$NAME
+UMS_START=1 # Wether to start or not UMS ver at boot time.
+DODTIME=30  # Time to wait for the server to die, in seconds.
+            # If this value is set too low you might not
+            # let the program to die gracefully and 'restart' will not work
+
+test -x $DAEMON || exit 1
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+
+# Include ums defaults if available
+if [[ -f "/etc/default/$NAME" ]] ; then
+        . /etc/default/$NAME
+fi
+
+# May we run the init.d script ?
+[[ $UMS_START = 1 ]] || exit 1
+
+#--------------------------------------------------------------------------
+# Some color codes
+txtred=$'\e[0;31m' # Red
+txtylw=$'\e[0;33m' # Yellow
+txtrst=$'\e[0m'    # Text Reset
+#--------------------------------------------------------------------------
+warnout(){
+    echo >&2 -e ""$txtylw"Warning:$txtrst $1"
+}
+#--------------------------------------------------------------------------
+running(){
+    pid=`pgrep -f 'java .*ums.jar.*'`
+}
+#--------------------------------------------------------------------------
+do_start(){
+    running && { warnout "$NAME is already running !"; exit 0; }
+    echo "Starting $DESC : $NAME"
+    UMS_PROFILE="$UMS_PROFILE" start-stop-daemon --chuid $UMS_USER --start --quiet --background --oknodo \
+        --exec $DAEMON -- $DAEMON_OPTS
+
+}
+#--------------------------------------------------------------------------
+do_stop(){
+    running || { warnout "$NAME is NOT running !"; exit 0; }   
+    local countdown="$DODTIME"
+    echo -e "Stopping $DESC : $NAME \c "
+    kill -9 $pid
+    while running; do
+        if (($countdown >= 0)); then
+            sleep 1; echo -n .;
+            ((--countdown))
+        else
+            break;
+        fi
+    done
+    echo
+    # If still running, then try to send SIGINT signal
+    running && { \
+        echo >&2 "Using kill -s SIGINT instead"; \
+        echo >&2 "If you see this message again, then you should increase the value of DODTIME in '$0'."; \
+        kill -2 $pid; \
+    }
+
+    if [ -e "/opt/ums/debug.log" ]; then
+    count=9
+    while [ $count -ge 1 ]
+    do
+    if [ -e "/opt/ums/debug.log.$count" ]; then
+        plus=$((count+1))
+        mv "/opt/ums/debug.log.$count" "/opt/ums/debug.log.$plus"
+    fi
+        count=$((count-1))
+    done
+    if [ -e "/opt/ums/debug.log" ]; then
+        mv "/opt/ums/debug.log" "/opt/ums/debug.log.1"
+    fi
+    fi
+
+    return 0
+}
+#--------------------------------------------------------------------------
+do_force-stop(){
+    running || { warnout "$NAME is NOT running !"; exit 0; }   
+    echo "Stopping $DESC : $NAME"
+    kill -9 $pid
+    if [ -e "/opt/ums/debug.log" ]; then
+    count=9
+    while [ $count -ge 1 ]
+    do
+    if [ -e "/opt/ums/debug.log.$count" ]; then
+        plus=$((count+1))
+   mv "/opt/ums/debug.log.$count" "/opt/ums/debug.log.$plus"
+    fi
+       count=$((count-1))
+    done
+    if [ -e "/opt/ums/debug.log" ]; then
+   mv "/opt/ums/debug.log" "/opt/ums/debug.log.1"
+    fi
+    fi
+}
+#--------------------------------------------------------------------------
+do_status(){
+    echo -n " * $NAME is "
+    ( running || { echo "NOT running "; exit 0; } )
+    ( running && { echo "running (PID -> $(echo $pid))"; exit 0; } )
+}
+#--------------------------------------------------------------------------
+case "$1" in
+
+    start|stop|force-stop|status)
+        do_${1}
+        ;;
+    restart|reload)
+        do_stop
+        do_start
+        ;;
+    force-restart|force-reload)
+        do_force-stop
+        do_start
+        ;;
+    *)
+        echo "Usage: $SCRIPTNAME {start|stop|force-stop|restart|force-restart|reload|force-reload|status}"
+        exit 1
+        ;;
+esac

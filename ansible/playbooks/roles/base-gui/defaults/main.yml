@@ -1,0 +1,3 @@
+---
+base_gui_packages:
+  - terminator

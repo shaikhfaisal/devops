@@ -1,0 +1,6 @@
+---
+- hosts: home-ubuntu-desktops
+  sudo: true
+  roles:
+    - base
+    - base-gui 

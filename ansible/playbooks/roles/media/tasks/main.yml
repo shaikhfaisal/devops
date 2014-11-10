@@ -1,0 +1,48 @@
+- name: Create ums user
+  user: name={{ ums_user }} comment="Universal Media Server" home=/opt/ums
+
+- name: Add sun java repo
+  apt_repository: repo='{{ item }}' state=present
+  with_items:
+    - deb http://www.duinsoft.nl/pkg debs all
+    - ppa:jon-severinsson/ffmpeg
+
+- name: Add sun java repo key
+  apt_key: keyserver=keys.gnupg.net id=5CB26B26
+
+- name: Install packages
+  apt: name={{ item }} state=latest
+  with_items:
+    - update-sun-jre
+    - mplayer 
+    - mencoder
+    - ffmpeg 
+    - mediainfo
+
+- name: Download Universal Media Server
+  get_url: url=http://downloads.sourceforge.net/project/unimediaserver/Official%20Releases/Linux/UMS-4.2.1-Java7.tgz?r=http%3A%2F%2Fwww.universalmediaserver.com%2F&ts=1415575670&use_mirror=freefr dest=/var/tmp/UMS-4.2.1-Java7.tgz mode=0440 
+
+- name: Extract Universal Media Server
+  unarchive: copy=no src=/var/tmp/UMS-4.2.1-Java7.tgz dest=/opt/ creates=/opt/ums/UMS.conf
+
+- name: Create extraction directory
+  file: path=/opt/ums state=link src=/opt/ums-4.2.1
+
+- name: Copy over init.d file
+  template: src=UMS.init.d.script dest=/etc/init.d/ums mode=0755
+
+- name: Add to default startup
+  command: update-rc.d ums defaults
+
+- name: Copy over UMS.conf file
+  template: src=UMS.conf.j2 dest=/etc/UMS.conf
+
+- name: Copy over WEB.conf file
+  template: src=WEB.conf.j2 dest=/etc/WEB.conf
+
+- name: Mount external drive containing media
+  mount: name={{ item.mount_point }} src={{ item.src }} fstype={{ item.fstype }} opts=ro state=mounted
+  with_items: external_media_drives
+
+- name: Reload UMS
+  service: name=ums state=reloaded enabled=yes

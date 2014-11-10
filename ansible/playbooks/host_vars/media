@@ -1,0 +1,5 @@
+---
+external_media_drives:
+  - mount_point: /media/video0
+    src: /dev/sda1
+    fstype: ext3

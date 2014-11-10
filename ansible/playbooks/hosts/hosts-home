@@ -1,0 +1,6 @@
+[home-ubuntu-desktops]
+outpost01 ansible_connection=local
+
+
+[home-ubuntu-servers]
+media

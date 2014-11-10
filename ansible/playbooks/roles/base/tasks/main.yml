@@ -1,0 +1,4 @@
+---
+- name: Install base packages
+  apt: name={{ item }} update_cache=yes state=latest
+  with_items: base_packages

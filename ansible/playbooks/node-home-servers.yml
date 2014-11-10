@@ -1,0 +1,5 @@
+---
+- hosts: home-ubuntu-servers
+  sudo: true
+  roles:
+    - base

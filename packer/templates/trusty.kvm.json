@@ -1,0 +1,70 @@
+{
+  "description" : "Ubuntu LTS Trusty Tahr",
+
+  "variables" : {
+    "vm_name": "ubuntu-14.04-LTS.kvm",
+    "vm_domain": "example.com"
+  },
+  
+  "builders":  [
+    {
+      "type": "qemu",
+      "accelerator": "kvm",
+
+      "iso_url": "http://releases.ubuntu.com/trusty/ubuntu-14.04-server-amd64.iso",
+      "iso_checksum": "01545fa976c8367b4f0d59169ac4866c",
+      "iso_checksum_type": "md5",
+  
+      "shutdown_command": "echo 'halt -p' > shutdown.sh; echo 'vagrant'|sudo -S sh 'shutdown.sh'",
+  
+      "disk_size": 20000,
+  
+      "format": "qcow2",
+      "output_directory": "vms/{{user `vm_name`}}", 
+ 
+      "headless": false,
+  
+      "http_directory": "httpdir",
+      "http_port_min": 10082,
+      "http_port_max": 10089,
+  
+      "ssh_host_port_min": 2222,
+      "ssh_host_port_max": 2229,
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "90m",
+  
+      "name": "{{user `vm_name`}}",
+
+      "boot_wait": "2s",
+
+      "boot_command":  [
+
+        "<esc>",
+        "<esc>",
+        "<enter><wait>",
+        "/install/vmlinuz",
+        " auto",
+        " console-setup/ask_detect=false",
+        " console-setup/layoutcode=uk",
+        " console-setup/modelcode=pc105",
+        " debconf/frontend=noninteractive",
+        " debian-installer=en_GB",
+        " fb=false",
+        " initrd=/install/initrd.gz",
+        " kbd-chooser/method=us",
+        " keyboard-configuration/layout=UK",
+        " keyboard-configuration/variant=UK",
+        " locale=en_US",
+        " netcfg/get_domain={{user `vm_domain`}}",
+        " netcfg/get_hostname=vagrant",
+        " noapic",
+        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu-14.04/preseed.cfg",
+        " -- ",
+        "<enter>"
+      ]
+    }
+  ]
+
+}
