@@ -1,5 +1,5 @@
 ---
-- hosts: "{env}-api"
+- hosts: "{env}-cache"
   sudo: true
   roles:
     - redis

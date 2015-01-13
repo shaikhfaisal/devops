@@ -1,0 +1,5 @@
+---
+- hosts: "{env}-db"
+  sudo: true
+  roles:
+    - postgresql
