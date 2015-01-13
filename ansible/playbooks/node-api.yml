@@ -2,4 +2,4 @@
 - hosts: "{env}-api"
   sudo: true
   roles:
-    - api
+    - nginx
