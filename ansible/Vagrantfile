@@ -1,0 +1,38 @@
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+
+  config.vm.define "devopsbox", primary: true do |devopsbox|
+
+    devopsbox.vm.box = "ansible.box"
+
+    devopsbox.vm.box_url = "file:///Users/fss/workspace/shaikhfaisal/devops/packer/packer_virtualbox-iso_virtualbox.box"
+
+    devopsbox.vm.network "forwarded_port", guest: "80", host: "18080"
+    devopsbox.vm.network "forwarded_port", guest: "22", host: "12222"
+
+    devopsbox.vm.network "private_network", ip: "10.0.4.16"
+
+    devopsbox.vm.hostname = "ansible.box"
+    devopsbox.hostsupdater.aliases = ["ansible.box"]
+
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+    config.ssh.forward_agent=true
+
+    devopsbox.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = 3072
+      vb.cpus = 2
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+      vb.customize ["modifyvm", :id, "--natnet1", "10.0.3.0/24"]
+    end
+
+    #config.vm.provision :file,
+    #  source: '~/.gitconfig',
+    #  destination: '~/.gitconfig'
+
+  end
+end
