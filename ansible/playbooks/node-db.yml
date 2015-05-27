@@ -1,5 +1,8 @@
 ---
-- hosts: "{env}-db"
+- include: common.yml
+
+- hosts: "{{ hosts }}"
   sudo: true
+  connection: ssh
   roles:
     - postgresql

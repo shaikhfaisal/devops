@@ -10,3 +10,6 @@ ansible-update-home-ubuntu-servers:
 
 ansible-update-home-media-servers:
 	ansible-playbook node-media-servers.yml -K
+
+node-db:
+	ansible-playbook -i hosts -e "hosts=ansible.box" node-db.yml -u vagrant

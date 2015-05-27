@@ -1,0 +1,17 @@
+# Ansible inventory hosts file
+[dev:vars]
+env=dev
+
+#####################
+# nodes definitions #
+#####################
+
+[vagrant-node]
+ansible.box ansible_ssh_host=127.0.0.1 ansible_ssh_port=12222
+
+######################
+# groups definitions #
+######################
+
+[dev:children]
+vagrant-node

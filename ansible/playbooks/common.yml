@@ -1,0 +1,10 @@
+---
+- hosts: "{{ hosts }}"
+  sudo: true
+  connection: ssh
+  tasks:
+    - name: Make sure our prerequisites are installed
+      apt: name={{ item }} state=latest
+      with_items:
+        - python-pycurl
+        - ca-certificates
